@@ -32,6 +32,10 @@ Each card speaks its label aloud when tapped — English cards in an American En
 
 Open `MemoryCardGame.xcodeproj` in Xcode, select a simulator or connected device, and press **Run** (⌘R).
 
+## Web Version
+
+A standalone web port of the game lives in `WebApp/index.html`. It is a single self-contained HTML file (no build step, no dependencies) that replicates all game mechanics — card flipping, bilingual speech via the Web Speech API, timer, and match detection. It is **not used by the Xcode project** and is not referenced anywhere in the iOS build; it exists solely for embedding in a website (e.g., pasting into a WordPress Custom HTML block).
+
 ## Acknowledgements
 
 This game was fully generated with AI — built using [Claude Code](https://claude.ai/code) by Anthropic.

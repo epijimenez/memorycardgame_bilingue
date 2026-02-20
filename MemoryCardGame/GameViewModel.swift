@@ -14,6 +14,7 @@ class GameViewModel: ObservableObject {
     @Published var cards: [Card] = []
     @Published var gameState: GameState = .start
     @Published var elapsedTime: TimeInterval = 0
+    @Published var isAndysMode: Bool = false
 
     private var firstSelectedIndex: Int? = nil
     private var isProcessing = false
@@ -41,7 +42,8 @@ class GameViewModel: ObservableObject {
 
     // MARK: - Game Flow
 
-    func startGame() {
+    func startGame(andysMode: Bool? = nil) {
+        if let andysMode { isAndysMode = andysMode }
         previewTask?.cancel()
         stopTimer()
         buildCards()
@@ -50,9 +52,9 @@ class GameViewModel: ObservableObject {
         firstSelectedIndex = nil
         isProcessing = false
 
-        // Show all cards face-up for 5 seconds, then flip them down
+        let previewDuration = isAndysMode ? GameConstants.andysModePreviewDuration : GameConstants.previewDuration
         previewTask = Task {
-            try? await Task.sleep(for: GameConstants.previewDuration)
+            try? await Task.sleep(for: previewDuration)
             guard !Task.isCancelled else { return }
             withAnimation(.easeInOut(duration: GameConstants.flipAnimationDuration)) {
                 for i in self.cards.indices {
@@ -90,8 +92,6 @@ class GameViewModel: ObservableObject {
 
             let isMatch = cards[firstIndex].emoji == cards[index].emoji
 
-            try? await Task.sleep(for: GameConstants.matchCheckDelay)
-            
             if isMatch {
                 withAnimation(.easeInOut(duration: GameConstants.flipAnimationDuration)) {
                     cards[firstIndex].isMatched = true
@@ -99,6 +99,8 @@ class GameViewModel: ObservableObject {
                 }
                 checkForWin()
             } else {
+                let delay = isAndysMode ? GameConstants.andysModeMismatchDelay : GameConstants.mismatchDelay
+                try? await Task.sleep(for: delay)
                 withAnimation(.easeInOut(duration: GameConstants.flipAnimationDuration)) {
                     cards[firstIndex].isFaceUp = false
                     cards[index].isFaceUp = false

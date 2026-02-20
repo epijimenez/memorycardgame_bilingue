@@ -41,6 +41,10 @@ The app follows a lightweight MVVM pattern with a state-machine game flow.
 - `CardView.swift` — stateless; receives a `Card` value and an `async` tap closure. The 3D flip is a `rotation3DEffect` on the Y-axis at the `ZStack` level; the back-face "?" has a counter-rotation to prevent mirroring.
 - `ContentView.swift` — layout only; uses `GeometryReader` to compute fixed-width `GridItem` columns so all 16 cards fill the available width precisely.
 
+## Web Version
+
+`WebApp/index.html` is a self-contained HTML/CSS/JS port of the game intended for embedding in a website (e.g., WordPress Custom HTML block). It is **not part of the Xcode project** — it is never built, linked, or referenced by any iOS target. Do not import or reference it from Swift code. All game data (`emojiPool`, constants, state machine) mirrors the Swift source exactly.
+
 ### Key conventions
 - All async work uses `Task` + `Task.sleep(for: Duration)` — no `Timer`, no `DispatchQueue.asyncAfter`.
 - Card identity uses `UUID`; `ForEach` iterates by `vm.cards.indices` (not `Array(enumerated())`).

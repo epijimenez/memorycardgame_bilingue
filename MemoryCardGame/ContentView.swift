@@ -38,16 +38,29 @@ struct ContentView: View {
                 .font(.title3)
                 .foregroundColor(.secondary)
 
-            Button(action: { vm.startGame() }) {
-                Text("START")
-                    .font(.title2.weight(.bold))
-                    .foregroundColor(.white)
-                    .frame(width: 200, height: 56)
-                    .background(
-                        LinearGradient(colors: [.blue, .purple],
-                                       startPoint: .leading, endPoint: .trailing)
-                    )
-                    .cornerRadius(28)
+            VStack(spacing: 12) {
+                Button(action: { vm.startGame(andysMode: false) }) {
+                    Text("START")
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.white)
+                        .frame(width: 200, height: 56)
+                        .background(
+                            LinearGradient(colors: [.blue, .purple],
+                                           startPoint: .leading, endPoint: .trailing)
+                        )
+                        .cornerRadius(28)
+                }
+                Button(action: { vm.startGame(andysMode: true) }) {
+                    Text("⚡ Andy's Mode")
+                        .font(.title3.weight(.bold))
+                        .foregroundColor(.white)
+                        .frame(width: 200, height: 56)
+                        .background(
+                            LinearGradient(colors: [Color(red: 1, green: 0.42, blue: 0), .pink],
+                                           startPoint: .leading, endPoint: .trailing)
+                        )
+                        .cornerRadius(28)
+                }
             }
             .padding(.top, 16)
         }
@@ -66,6 +79,15 @@ struct ContentView: View {
                 } else {
                     Text("⏱ \(vm.formattedTime)")
                         .font(.system(.title3, design: .monospaced).weight(.semibold))
+                }
+                if vm.isAndysMode {
+                    Text("⚡ Andy's Mode")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(.pink)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.pink.opacity(0.1))
+                        .cornerRadius(10)
                 }
                 Spacer()
                 Text("Matches: \(vm.cards.filter { $0.isMatched }.count / 2)/\(vm.pairCount)")

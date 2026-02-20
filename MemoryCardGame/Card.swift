@@ -29,14 +29,18 @@ struct EmojiItem: Codable {
 
 enum GameConstants {
     static let previewDuration: Duration = .seconds(5)
-    static let matchCheckDelay: Duration = .milliseconds(800)
+    static let mismatchDelay: Duration = .milliseconds(800)
     static let flipAnimationDuration: TimeInterval = 0.3
     static let cardCornerRadius: CGFloat = 12
     static let cardAspectRatio: CGFloat = 0.72
     static let timerUpdateInterval: Duration = .milliseconds(100)
     static let gridSpacing: CGFloat = 8
     static let speechRate: Float = 0.5
-    
+
+    // Andy's Mode
+    static let andysModePreviewDuration: Duration = .seconds(2)
+    static let andysModeMismatchDelay: Duration = .milliseconds(300)
+
     // Colors
     static let cardTextColor = Color(white: 0.3) // Dark gray - readable in both light and dark mode
 }

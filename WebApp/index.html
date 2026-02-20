@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory Match — English ↔ Español</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #f9f9f9, #efefef);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px 16px;
+      min-height: 100vh;
+    }
+    .screen.active { display: flex; }
+
+    /* ── Start screen ── */
+    .start-brain    { font-size: 80px; margin-bottom: 16px; }
+    .start-title    { font-size: 34px; font-weight: 700; margin-bottom: 8px; }
+    .start-subtitle { font-size: 18px; color: #666; margin-bottom: 32px; }
+    .mode-buttons   { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+    /* ── Shared button ── */
+    .btn-primary {
+      background: linear-gradient(to right, #007AFF, #9B59B6);
+      color: white;
+      border: none;
+      border-radius: 28px;
+      width: 200px;
+      height: 56px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-andy {
+      background: linear-gradient(to right, #FF6B00, #FF2D55);
+      color: white;
+      border: none;
+      border-radius: 28px;
+      width: 200px;
+      height: 56px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+    }
+    .btn-andy:hover { opacity: 0.9; }
+
+    /* ── Andy's Mode badge in header ── */
+    .andy-badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: #FF2D55;
+      background: rgba(255, 45, 85, 0.1);
+      border-radius: 10px;
+      padding: 2px 8px;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    /* ── Game screen ── */
+    #screen-game {
+      justify-content: flex-start;
+      padding-top: 16px;
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .header-left  { flex: 1; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .header-right { font-size: 14px; color: #888; margin-right: 12px; }
+
+    .btn-restart {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      color: #aaa;
+      line-height: 1;
+      padding: 0;
+    }
+    .btn-restart:hover { color: #555; }
+
+    .preview-label { color: #FF9500; }
+
+    /* ── Card grid ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* ── Card ── */
+    .card-wrapper {
+      perspective: 600px;
+      cursor: pointer;
+      aspect-ratio: 0.72;
+    }
+
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    /* Flipped state */
+    .card-wrapper.face-up .card-inner,
+    .card-wrapper.matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Back face */
+    .card-back {
+      background: linear-gradient(135deg, #007AFF, #9B59B6);
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .card-back-q {
+      font-size: 28px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Front face — rotated so it faces forward when card-inner is flipped */
+    .card-front {
+      background: white;
+      border: 2px solid rgba(0,0,0,0.15);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transform: rotateY(180deg);
+      padding: 4px;
+      text-align: center;
+    }
+    .card-wrapper.matched .card-front {
+      background: rgba(52, 199, 89, 0.15);
+      border-color: #34C759;
+    }
+
+    .card-emoji { font-size: 36px; line-height: 1.2; }
+    .card-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: #4d4d4d;
+      margin-top: 4px;
+      word-break: break-word;
+      line-height: 1.3;
+    }
+
+    /* ── Finished screen ── */
+    .finished-emoji       { font-size: 72px; margin-bottom: 16px; }
+    .finished-title       { font-size: 30px; font-weight: 700; margin-bottom: 24px; }
+    .finished-time-label  { font-size: 14px; color: #888; margin-bottom: 8px; }
+    .finished-time {
+      font-size: 48px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(to right, #007AFF, #9B59B6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 400px) {
+      .card-emoji { font-size: 28px; }
+      .card-label { font-size: 9px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Start Screen -->
+  <div id="screen-start" class="screen active">
+    <div class="start-brain">🧠</div>
+    <div class="start-title">Memory Match</div>
+    <div class="start-subtitle">English ↔ Español</div>
+    <div class="mode-buttons">
+      <button class="btn-primary" onclick="startGame('normal')">START</button>
+      <button class="btn-andy" onclick="startGame('andy')">⚡ Andy's Mode</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <div class="header-left" id="header-left"></div>
+      <div class="header-right" id="header-matches"></div>
+      <button class="btn-restart" onclick="startGame()" title="Restart">↺</button>
+    </div>
+    <div class="card-grid" id="card-grid"></div>
+  </div>
+
+  <!-- Finished Screen -->
+  <div id="screen-finished" class="screen">
+    <div class="finished-emoji">🎉</div>
+    <div class="finished-title">You did it!</div>
+    <div class="finished-time-label">Your Time</div>
+    <div class="finished-time" id="finished-time"></div>
+    <button class="btn-primary" onclick="startGame()">Play Again</button>
+  </div>
+
+  <script>
+    // ── Data ──────────────────────────────────────────────────────────────────
+
+    const emojiPool = [
+      { emoji: "🍎", english: "Apple",       spanish: "Manzana"   },
+      { emoji: "🚙", english: "Car",         spanish: "Carro"     },
+      { emoji: "✈️", english: "Airplane",    spanish: "Avión"     },
+      { emoji: "⚾️", english: "Baseball",   spanish: "Béisbol"   },
+      { emoji: "🍪", english: "Cookie",      spanish: "Galleta"   },
+      { emoji: "🥕", english: "Carrot",      spanish: "Zanahoria" },
+      { emoji: "🥑", english: "Avocado",     spanish: "Aguacate"  },
+      { emoji: "🍓", english: "Strawberry",  spanish: "Fresa"     },
+      { emoji: "🐶", english: "Dog",         spanish: "Perro"     },
+      { emoji: "🦁", english: "Lion",        spanish: "León"      },
+      { emoji: "🐵", english: "Monkey",      spanish: "Mono"      },
+      { emoji: "📱", english: "Phone",       spanish: "Teléfono"  },
+      { emoji: "📸", english: "Camera",      spanish: "Cámara"    },
+      { emoji: "⏰", english: "Clock",       spanish: "Reloj"     },
+      { emoji: "💡", english: "Light Bulb",  spanish: "Bombilla"  },
+      { emoji: "🌮", english: "Taco",        spanish: "Taco"      },
+      { emoji: "🎸", english: "Guitar",      spanish: "Guitarra"  },
+      { emoji: "🏠", english: "House",       spanish: "Casa"      },
+      { emoji: "⭐️", english: "Star",       spanish: "Estrella"  },
+      { emoji: "🌙", english: "Moon",        spanish: "Luna"      },
+      { emoji: "🔑", english: "Key",         spanish: "Llave"     },
+      { emoji: "📚", english: "Books",       spanish: "Libros"    },
+      { emoji: "🎩", english: "Hat",         spanish: "Sombrero"  },
+      { emoji: "🐱", english: "Cat",         spanish: "Gato"      },
+      { emoji: "🍕", english: "Pizza",       spanish: "Pizza"     },
+    ];
+
+    // ── State ─────────────────────────────────────────────────────────────────
+
+    let cards = [];
+    let gameState = 'start';   // 'start' | 'preview' | 'playing' | 'finished'
+    let firstSelectedIndex = null;
+    let isProcessing = false;
+    let elapsedTime = 0;
+    let timerInterval = null;
+    let timerStartTime = null;
+    let previewTimeout = null;
+    let mismatchDelay = 800;   // ms to wait before flipping non-matched cards back
+    let previewDuration = 5000; // ms to show all cards face-up before play begins
+    let andysMode = false;
+
+    // ── Utilities ─────────────────────────────────────────────────────────────
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function formatTime(t) {
+      const total = Math.floor(t);
+      const minutes = Math.floor(total / 60);
+      const seconds = total % 60;
+      const tenths = Math.floor((t - total) * 10);
+      return `${minutes}:${String(seconds).padStart(2, '0')}.${tenths}`;
+    }
+
+    // ── Speech ────────────────────────────────────────────────────────────────
+
+    function speak(text, isSpanish) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = isSpanish ? 'es-MX' : 'en-US';
+      utterance.rate = 0.85;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ── Screen management ─────────────────────────────────────────────────────
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // ── Card building ─────────────────────────────────────────────────────────
+
+    function buildCards() {
+      const selected = shuffle(emojiPool).slice(0, 8);
+      const newCards = [];
+      selected.forEach(item => {
+        newCards.push({ id: crypto.randomUUID(), emoji: item.emoji, englishName: item.english, spanishName: item.spanish, isSpanish: false, isFaceUp: true,  isMatched: false });
+        newCards.push({ id: crypto.randomUUID(), emoji: item.emoji, englishName: item.english, spanishName: item.spanish, isSpanish: true,  isFaceUp: true,  isMatched: false });
+      });
+      cards = shuffle(newCards);
+    }
+
+    // ── Timer ─────────────────────────────────────────────────────────────────
+
+    function startTimer() {
+      stopTimer();
+      timerStartTime = performance.now();
+      timerInterval = setInterval(() => {
+        elapsedTime = (performance.now() - timerStartTime) / 1000;
+        updateHeader();
+      }, 100);
+    }
+
+    function stopTimer() {
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    }
+
+    // ── Game flow ─────────────────────────────────────────────────────────────
+
+    function startGame(mode) {
+      if (mode === 'andy')        { andysMode = true;  mismatchDelay = 300; previewDuration = 2000; }
+      else if (mode === 'normal') { andysMode = false; mismatchDelay = 800; previewDuration = 5000; }
+      // if mode is omitted (restart), keep existing andysMode / mismatchDelay
+
+      if (previewTimeout) { clearTimeout(previewTimeout); previewTimeout = null; }
+      stopTimer();
+      elapsedTime = 0;
+      firstSelectedIndex = null;
+      isProcessing = false;
+
+      buildCards();
+      gameState = 'preview';
+      showScreen('screen-game');
+      renderGrid();
+      updateHeader();
+
+      // Flip all cards face-down after preview and start playing
+      previewTimeout = setTimeout(() => {
+        cards.forEach(c => c.isFaceUp = false);
+        gameState = 'playing';
+        renderGrid();
+        startTimer();
+        updateHeader();
+      }, previewDuration);
+    }
+
+    // ── Card tap ──────────────────────────────────────────────────────────────
+
+    async function selectCard(index) {
+      if (gameState !== 'playing') return;
+      if (isProcessing) return;
+      const card = cards[index];
+      if (card.isFaceUp || card.isMatched) return;
+
+      card.isFaceUp = true;
+      flipCard(index);
+      speak(card.isSpanish ? card.spanishName : card.englishName, card.isSpanish);
+
+      if (firstSelectedIndex !== null) {
+        const firstIndex = firstSelectedIndex;
+        firstSelectedIndex = null;
+        isProcessing = true;
+
+        const isMatch = cards[firstIndex].emoji === card.emoji;
+
+        if (isMatch) {
+          cards[firstIndex].isMatched = true;
+          cards[index].isMatched = true;
+          updateCardElement(firstIndex);
+          updateCardElement(index);
+          checkForWin();
+        } else {
+          await sleep(mismatchDelay);
+          cards[firstIndex].isFaceUp = false;
+          cards[index].isFaceUp = false;
+          flipCard(firstIndex);
+          flipCard(index);
+        }
+
+        isProcessing = false;
+      } else {
+        firstSelectedIndex = index;
+      }
+
+      updateHeader();
+    }
+
+    function checkForWin() {
+      if (cards.every(c => c.isMatched)) {
+        stopTimer();
+        setTimeout(() => {
+          gameState = 'finished';
+          document.getElementById('finished-time').textContent = formatTime(elapsedTime);
+          showScreen('screen-finished');
+        }, 500);
+      }
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────────────────
+
+    function renderGrid() {
+      const grid = document.getElementById('card-grid');
+      grid.innerHTML = '';
+      cards.forEach((card, i) => {
+        const wrapper = document.createElement('div');
+        const faceUp = card.isFaceUp || card.isMatched;
+        wrapper.className = 'card-wrapper' + (faceUp ? ' face-up' : '') + (card.isMatched ? ' matched' : '');
+        wrapper.dataset.index = i;
+        wrapper.innerHTML = `
+          <div class="card-inner">
+            <div class="card-face card-back"><span class="card-back-q">?</span></div>
+            <div class="card-face card-front">
+              <span class="card-emoji">${card.emoji}</span>
+              <span class="card-label">${card.isSpanish ? card.spanishName : card.englishName}</span>
+            </div>
+          </div>`;
+        wrapper.addEventListener('click', () => selectCard(i));
+        grid.appendChild(wrapper);
+      });
+    }
+
+    function flipCard(index) {
+      const el = document.querySelector(`.card-wrapper[data-index="${index}"]`);
+      if (!el) return;
+      const card = cards[index];
+      el.classList.toggle('face-up', card.isFaceUp || card.isMatched);
+      el.classList.toggle('matched', card.isMatched);
+    }
+
+    function updateCardElement(index) {
+      const el = document.querySelector(`.card-wrapper[data-index="${index}"]`);
+      if (!el) return;
+      const card = cards[index];
+      el.classList.toggle('face-up', card.isFaceUp || card.isMatched);
+      el.classList.toggle('matched', card.isMatched);
+    }
+
+    function updateHeader() {
+      const leftEl = document.getElementById('header-left');
+      const matchEl = document.getElementById('header-matches');
+      const matchCount = cards.filter(c => c.isMatched).length / 2;
+      matchEl.textContent = `Matches: ${matchCount}/8`;
+      const badge = andysMode ? '<span class="andy-badge">⚡ Andy\'s Mode</span>' : '';
+      if (gameState === 'preview') {
+        leftEl.innerHTML = '<span class="preview-label">Memorize!</span>' + badge;
+      } else {
+        leftEl.innerHTML = `⏱ ${formatTime(elapsedTime)}` + badge;
+      }
+    }
+  </script>
+</body>
+</html>
