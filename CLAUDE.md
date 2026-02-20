@@ -31,13 +31,13 @@ The app follows a lightweight MVVM pattern with a state-machine game flow.
 ### State machine
 `GameViewModel` drives everything through `GameState`:
 ```
-.start → .preview (5 s, all cards face-up) → .playing → .finished
+.start → .preview (5 s normal / 2 s Andy's Mode, all cards face-up) → .playing → .finished
 ```
-`ContentView` switches between three screens based on `gameState`. Restarting always calls `vm.startGame()`.
+`ContentView` switches between three screens based on `gameState`. The start screen offers two mode buttons: normal (`startGame(andysMode: false)`) and Andy's Mode (`startGame(andysMode: true)`). Restarting mid-game calls `vm.startGame()` with no argument, which preserves the current mode.
 
 ### Data flow
 - `Card.swift` — pure data: `Card` (Identifiable, Equatable), `EmojiItem` (Codable), `GameConstants` enum, and the global `emojiPool` array (25 items).
-- `GameViewModel.swift` — `@MainActor ObservableObject`; owns all mutable state (`@Published cards`, `gameState`, `elapsedTime`). Uses two `Task` properties (`previewTask`, `timerTask`) with explicit cancellation checks. `AVSpeechSynthesizer` and `UIImpactFeedbackGenerator` are lazy optionals initialized on first use and cleaned up in `deinit`.
+- `GameViewModel.swift` — `@MainActor ObservableObject`; owns all mutable state (`@Published cards`, `gameState`, `elapsedTime`, `isAndysMode`). Uses two `Task` properties (`previewTask`, `timerTask`) with explicit cancellation checks. `AVSpeechSynthesizer` and `UIImpactFeedbackGenerator` are lazy optionals initialized on first use and cleaned up in `deinit`.
 - `CardView.swift` — stateless; receives a `Card` value and an `async` tap closure. The 3D flip is a `rotation3DEffect` on the Y-axis at the `ZStack` level; the back-face "?" has a counter-rotation to prevent mirroring.
 - `ContentView.swift` — layout only; uses `GeometryReader` to compute fixed-width `GridItem` columns so all 16 cards fill the available width precisely.
 
@@ -51,3 +51,5 @@ The app follows a lightweight MVVM pattern with a state-machine game flow.
 - All magic numbers live in `GameConstants` — add new constants there, not inline.
 - Card text uses `Color(white: 0.3)` (fixed dark gray) — do **not** use `.primary` or adaptive colors for card face text, as cards have a white background that doesn't adapt to Dark Mode.
 - Match detection: two cards match when their `emoji` strings are equal (one card has `isSpanish: false`, the other `isSpanish: true`).
+- Matched pairs resolve with **no delay**. Only mismatches wait before flipping back: `GameConstants.mismatchDelay` (800 ms) in normal mode, `GameConstants.andysModeMismatchDelay` (300 ms) in Andy's Mode.
+- Andy's Mode also shortens the preview to `GameConstants.andysModePreviewDuration` (2 s) vs the normal `GameConstants.previewDuration` (5 s).

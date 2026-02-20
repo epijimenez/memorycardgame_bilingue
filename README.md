@@ -4,23 +4,25 @@ A bilingual memory card game for iPhone and iPad. Flip cards to find matching pa
 
 ## How to Play
 
-1. Tap **START** — all 16 cards are revealed face-up for 5 seconds. Memorize their positions.
-2. Cards flip back over. The timer starts.
-3. Tap any card to flip it. Then tap a second card:
-   - **Match** — both cards stay face-up and turn green.
+1. Choose a mode — **START** (normal) or **⚡ Andy's Mode** (faster).
+2. All 16 cards are revealed face-up during a preview period. Memorize their positions.
+3. Cards flip back over. The timer starts.
+4. Tap any card to flip it. Then tap a second card:
+   - **Match** — both cards instantly stay face-up and turn green.
    - **No match** — both cards flip back over after a brief pause.
-4. Find all 8 pairs to win. Your completion time is displayed on the finish screen.
-5. Tap **Play Again** (or the refresh button during a game) to start a new round with a reshuffled board.
+5. Find all 8 pairs to win. Your completion time is displayed on the finish screen.
+6. Tap **Play Again** (or the refresh button during a game) to start a new round with a reshuffled board.
 
 Each card speaks its label aloud when tapped — English cards in an American English voice, Spanish cards in a Mexican Spanish voice.
 
 ## Gameplay Details
 
 - **Board:** 4×4 grid, 16 cards, 8 matching pairs
-- **Preview:** 5-second look at all cards before play begins
-- **Matching:** One card in each pair shows the English name; the other shows the Spanish name. They share the same emoji.
+- **Modes:** Normal (5 s preview, 800 ms mismatch pause) · ⚡ Andy's Mode (2 s preview, 300 ms mismatch pause)
+- **Matching:** Matched pairs resolve instantly with no delay. Mismatched cards pause briefly before flipping back.
+- **Card labels:** One card in each pair shows the English name; the other shows the Spanish name. They share the same emoji.
 - **Timer:** Counts up in tenths of a second from when gameplay starts
-- **Haptics:** Light tap feedback on every card flip
+- **Haptics:** Light tap feedback on every card flip (iOS only)
 
 ## Requirements
 
