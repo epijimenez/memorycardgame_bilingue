@@ -31,3 +31,7 @@ Each card speaks its label aloud when tapped — English cards in an American En
 ## Building
 
 Open `MemoryCardGame.xcodeproj` in Xcode, select a simulator or connected device, and press **Run** (⌘R).
+
+## Acknowledgements
+
+This game was fully generated with AI — built using [Claude Code](https://claude.ai/code) by Anthropic.
